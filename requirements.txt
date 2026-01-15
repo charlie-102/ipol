@@ -1,0 +1,28 @@
+# IPOL Runner - Combined Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core (ipol_runner CLI)
+numpy
+opencv-python
+
+# QMSANet (77777000545-main) - Image Denoising
+torch
+torchvision
+torchsummary
+h5py
+scikit-image
+
+# Kervrann (602-main) - Change Detection
+scipy
+matplotlib
+numba
+iio
+
+# CS-TRD (cstrd-ipol) - Tree Ring Detection
+pandas
+scikit-learn
+shapely
+natsort
+glob2
+imageio
+Pillow

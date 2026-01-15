@@ -1,0 +1,40 @@
+# IPOL Runner - .gitignore
+
+# Method implementations (download separately from IPOL)
+/methods/
+
+# Sample test data
+/samples/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+
+# Virtual environments
+venv/
+.env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Output directories
+output/
+demo_output/
+
+# Validation status (local testing state)
+validation_status.json
+
+# OS
+.DS_Store
+Thumbs.db
