@@ -58,6 +58,30 @@ Before creating an adapter, understand the method:
 3. **Determine input/output**: What files does it read/write?
 4. **Check dependencies**: Look at `requirements.txt` or `pyproject.toml`
 
+### Step 2.5: Convert Non-Python Code to Python
+
+**IMPORTANT**: Always convert non-Python implementations to pure Python for inference.
+
+| Original Format | Conversion Strategy |
+|-----------------|---------------------|
+| **C++** | Rewrite core algorithm in Python/NumPy. Avoid building C++ deps (CGAL, Boost, Qt, etc.) |
+| **MATLAB** | Convert to Python using NumPy/SciPy. Use `finufft` for NFFT, `scipy.fft` for FFT |
+| **Jupyter Notebook** | Extract code cells into standalone `.py` script with argparse CLI |
+| **Quarto** | Same as Jupyter - extract to standalone Python script |
+| **Qt/GUI apps** | Remove GUI, keep only inference logic as CLI script |
+
+**Principles:**
+- Only need inference capability, not training or fancy UI
+- Minimize dependencies - prefer numpy/scipy over heavy C++ libs
+- Create standalone Python script with argparse in the method folder
+- Add `requirements.txt` with minimal deps (numpy, scipy, matplotlib)
+- Handle OpenMP conflicts: set `OMP_NUM_THREADS=1` if needed
+
+**Examples from this project:**
+- 414 (MATLAB EPR) → Python with `finufft` for NFFT
+- 418 (C++ CGAL mesh) → Python with just `numpy` for quantization
+- 440 (Jupyter federated) → Python CLI script with `scikit-learn`
+
 ### Step 3: Create Adapter
 
 Create `ipol_runner/methods/<method_name>.py`:
@@ -318,20 +342,70 @@ Place sample inputs in `samples/`:
 - `samples/<input_type>/` - Generic samples by input type (e.g., `samples/image/`)
 - `samples/test_image.png` - Auto-generated fallback for image methods
 
-## Current Methods (2025)
+## Current Methods
+
+**Total: 41 methods** (10 from 2025, 16 from 2024, 7 from Preprints, 8 from 2023)
+
+### IPOL 2025 Methods (10)
 
 | CLI Name | IPOL ID | Category | Input | Description |
 |----------|---------|----------|-------|-------------|
 | `qmsanet` | 545 | denoising | image | Quaternion denoising network |
 | `kervrann` | 602 | change_detection | image_pair | Symmetric change detector |
 | `cstrd` | 485 | detection | image | Tree ring detection |
-| `gaussian_splatting` | 566 | 3d_reconstruction | image | Gaussian splatting |
-| `latent_diffusion` | 580 | generation | image | Aerial image generation |
+| `gaussian_splatting` | 566 | 3d_reconstruction | image | Gaussian splatting (CUDA) |
+| `latent_diffusion` | 580 | generation | image | Aerial image generation (CUDA) |
 | `phase_unwrap` | 583 | phase_processing | image | Phase unwrapping |
 | `nerf_specularity` | 562 | 3d_reconstruction | dataset_id | NeRF comparison |
 | `semiogram` | 535 | medical | sensor_data | Gait analysis |
-| `sign_lmsls` | 560a | segmentation | pose_data | Sign language (LMSLS) |
-| `sign_asslisu` | 560b | segmentation | pose_data | Sign language (ASSLiSU) |
+| `sign_lmsls` | 560a | segmentation | pose_data | Sign language (LMSLS, Docker) |
+| `sign_asslisu` | 560b | segmentation | pose_data | Sign language (ASSLiSU, Docker) |
+
+### IPOL 2024 Methods (16)
+
+| CLI Name | IPOL ID | Category | Input | Description |
+|----------|---------|----------|-------|-------------|
+| `noisesniffer` | - | detection | image | Forgery detection via noise analysis |
+| `storm` | - | 3d_reconstruction | image | Super-resolution microscopy |
+| `bigcolor` | - | generation | image | Automatic image colorization |
+| `icolorit` | - | generation | image | Interactive colorization |
+| `nerf_vaxnerf` | - | 3d_reconstruction | dataset_id | VaxNeRF accelerated rendering |
+| `tsne` | - | detection | dataset_id | t-SNE dimensionality reduction |
+| `armcoda` | - | medical | sensor_data | Movement coordination analysis |
+| `dark_channel` | - | denoising | image | Dark channel prior dehazing |
+| `line_segment` | - | detection | image | Multi-method line detection |
+| `image_abstraction` | - | generation | image | Tree of shapes abstraction |
+| `superpixel_color` | - | generation | image_pair | Superpixel color transfer (CUDA) |
+| `slavc` | - | detection | image | Visual sound localization |
+| `survival_forest` | - | medical | sensor_data | Survival analysis forest |
+| `interactive_seg` | - | segmentation | image | Interactive segmentation (CUDA) |
+| `domain_seg` | - | segmentation | image | Domain generalization (CUDA) |
+| `phinet` | - | phase_processing | image_pair | InSAR phase denoising |
+
+### IPOL Preprint Methods (7)
+
+| CLI Name | IPOL ID | Category | Input | Status |
+|----------|---------|----------|-------|--------|
+| `voronoi_segmentation` | pre-591 | segmentation | image | ✅ Validated |
+| `bsde_segmentation` | pre-636 | segmentation | image | ❌ Needs OpenMP (Linux) |
+| `siamte` | pre-558 | detection | image | ✅ Validated |
+| `image_matting` | pre-532 | segmentation | image_pair | ✅ Validated |
+| `emvd_video_denoising` | pre-464 | denoising | video | ✅ Validated |
+| `fpn_reduction` | pre-436 | denoising | video | ✅ Validated |
+| `spherical_splines` | pre-451 | detection | dataset_id | ❌ Slow lookup tables
+
+### IPOL 2023 Methods (8)
+
+| CLI Name | IPOL ID | Category | Input | Requirements |
+|----------|---------|----------|-------|--------------|
+| `chromatic_aberration` | 443 | denoising | image | Needs Cython |
+| `mprnet` | 446 | denoising | image | Needs model weights (slow on CPU) |
+| `shape_vectorization` | 401 | segmentation | image | Needs cmake |
+| `burst_superres` | 460 | 3d_reconstruction | video | Needs DNG RAW files |
+| `opencco` | 477 | generation | dataset_id | Needs cmake |
+| `ganet` | 441 | 3d_reconstruction | image_pair | Needs model weights |
+| `bsde_denoising` | 467 | denoising | image | Needs OpenMP (macOS: `brew install libomp`) |
+| `signal_decomposition` | 417 | detection | sensor_data | Python ADMM (CSV input) |
 
 ## Tips for Reproduction
 

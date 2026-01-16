@@ -23,6 +23,12 @@ def get_sample_inputs(method: IPOLMethod) -> Optional[List[Path]]:
     # Method-specific samples
     method_samples = SAMPLES_DIR / method.name
     if method_samples.exists():
+        # For VIDEO type, return the directory itself (contains frames)
+        if method.input_type == InputType.VIDEO:
+            files = sorted(f for f in method_samples.iterdir() if f.is_file())
+            if files:
+                return [method_samples]  # Return directory, not individual files
+
         # Check for files first
         files = sorted(f for f in method_samples.iterdir() if f.is_file())
         if files:
@@ -41,6 +47,12 @@ def get_sample_inputs(method: IPOLMethod) -> Optional[List[Path]]:
     # Generic samples by input type
     type_samples = SAMPLES_DIR / method.input_type.value
     if type_samples.exists():
+        # For VIDEO type, return the directory itself
+        if method.input_type == InputType.VIDEO:
+            files = sorted(f for f in type_samples.iterdir() if f.is_file())
+            if files:
+                return [type_samples]
+
         files = sorted(f for f in type_samples.iterdir() if f.is_file())
         count = method.input_count if method.input_count > 0 else 1
         if len(files) >= count:
