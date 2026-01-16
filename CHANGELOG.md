@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-01-16
+
+### Session: Committed IPOL 2023 + preprint adapters and cleanup [#ffda]
+- **Added**: Committed 22 new method adapters (15 IPOL 2023 + 7 preprints) #ipol #git
+  - Files: `ipol_runner/methods/*.py` (22 new files)
+- **Changed**: Cleaned up 429MB of redundant ZIP files and pycache directories #cleanup
+- **Discussed**: Git push workflow with proper commit message formatting #git
+
+---
+
 ## 2026-01-15
 
 ### Session: Implemented persistent session memory via plan.md [#eabb]

@@ -148,12 +148,17 @@ class VideoNoiseMethod(IPOLMethod):
             cmd.extend(["-noise_b", str(params.get("noise_b", 0.2))])
 
         try:
+            import os
+            env = os.environ.copy()
+            env["MPLCONFIGDIR"] = "/tmp/claude/matplotlib"
+
             result = subprocess.run(
                 cmd,
                 cwd=str(output_dir),  # Run in output dir so files are saved there
                 capture_output=True,
                 text=True,
-                timeout=300
+                timeout=300,
+                env=env
             )
 
             # Check for outputs

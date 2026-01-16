@@ -39,6 +39,10 @@ class ARMCODAMethod(IPOLMethod):
         return InputType.SENSOR_DATA
 
     @property
+    def input_count(self) -> int:
+        return 0  # Uses internal motion capture dataset, no file input required
+
+    @property
     def requirements_file(self):
         return self.METHOD_DIR / "requirements.txt"
 
@@ -78,16 +82,14 @@ class ARMCODAMethod(IPOLMethod):
         movement = params.get("movement", "gesture1")
         sensor = params.get("sensor", 0)
 
-        # This method generates an interactive Plotly animation
-        # We'll run it and capture the HTML output
+        # Use the core script that doesn't require plotly
         cmd = [
-            sys.executable, "-c",
-            f"""
-import sys
-sys.path.insert(0, '{self.METHOD_DIR}')
-from main import main
-main({subject}, '{movement}', {sensor})
-"""
+            sys.executable,
+            str(self.METHOD_DIR / "armcoda_core.py"),
+            "--subject", str(subject),
+            "--movement", movement,
+            "--sensor", str(sensor),
+            "--output", str(output_dir)
         ]
 
         try:
@@ -96,7 +98,7 @@ main({subject}, '{movement}', {sensor})
                 cwd=str(self.METHOD_DIR),
                 capture_output=True,
                 text=True,
-                timeout=300
+                timeout=120
             )
 
             if result.returncode != 0:
@@ -106,33 +108,33 @@ main({subject}, '{movement}', {sensor})
                     error_message=f"ARMCODA failed: {result.stderr}"
                 )
 
-            # The method creates visualization files
-            # Check for any generated outputs
+            # Check for generated outputs
             outputs = {}
             primary = None
 
-            for out_file in self.METHOD_DIR.glob("*.html"):
-                import shutil
-                dst = output_dir / out_file.name
-                shutil.copy(out_file, dst)
-                outputs[out_file.stem] = dst
-                if primary is None:
-                    primary = dst
+            # Look for analysis summary
+            summary_file = output_dir / "analysis_summary.txt"
+            if summary_file.exists():
+                outputs["summary"] = summary_file
+                primary = summary_file
 
-            for out_file in self.METHOD_DIR.glob("*.png"):
-                import shutil
-                dst = output_dir / out_file.name
-                shutil.copy(out_file, dst)
-                outputs[out_file.stem] = dst
+            # Look for stats JSON
+            stats_file = output_dir / "movement_stats.json"
+            if stats_file.exists():
+                outputs["stats"] = stats_file
                 if primary is None:
-                    primary = dst
+                    primary = stats_file
+
+            # Look for numpy files
+            for npy_file in output_dir.glob("*.npy"):
+                outputs[npy_file.stem] = npy_file
 
             if not primary:
-                # Create a simple info file if no visual output
-                info_file = output_dir / "analysis_info.txt"
-                info_file.write_text(f"ARMCODA Analysis\nSubject: {subject}\nMovement: {movement}\nSensor: {sensor}\n\n{result.stdout}")
-                outputs["info"] = info_file
-                primary = info_file
+                return MethodResult(
+                    success=False,
+                    output_dir=output_dir,
+                    error_message=f"No output generated. stdout: {result.stdout}, stderr: {result.stderr}"
+                )
 
             return MethodResult(
                 success=True,

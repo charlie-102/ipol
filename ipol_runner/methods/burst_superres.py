@@ -1,6 +1,7 @@
 """Handheld Burst Super-Resolution adapter (IPOL 2023 article 460)."""
 import subprocess
 import sys
+import os
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -24,7 +25,7 @@ class BurstSuperResMethod(IPOLMethod):
 
     @property
     def description(self) -> str:
-        return "Enhance resolution from multiple handheld camera frames (RAW DNG)"
+        return "Enhance resolution from multiple handheld camera frames"
 
     @property
     def category(self) -> MethodCategory:
@@ -32,7 +33,7 @@ class BurstSuperResMethod(IPOLMethod):
 
     @property
     def input_type(self) -> InputType:
-        return InputType.VIDEO  # Expects directory of DNG files
+        return InputType.VIDEO  # Expects directory of image files
 
     @property
     def requirements_file(self):
@@ -66,22 +67,61 @@ class BurstSuperResMethod(IPOLMethod):
         params: Dict[str, Any]
     ) -> MethodResult:
         """Run burst super-resolution."""
-        input_path = inputs[0]  # Directory containing DNG files
+        input_path = inputs[0]  # Directory containing image files
 
-        # Check for DNG files
+        # Check for image files (DNG or standard formats)
         dng_files = list(input_path.glob("*.dng")) + list(input_path.glob("*.DNG"))
-        if not dng_files:
+        img_files = (list(input_path.glob("*.png")) + list(input_path.glob("*.PNG")) +
+                     list(input_path.glob("*.jpg")) + list(input_path.glob("*.JPG")) +
+                     list(input_path.glob("*.jpeg")) + list(input_path.glob("*.JPEG")))
+
+        use_simplified = False
+        if dng_files:
+            # Check if all dependencies for original method are available
+            try:
+                import rawpy
+                import polyblur  # Required by original demo.py
+                import colour_demosaicing
+            except ImportError:
+                use_simplified = True
+        elif img_files:
+            use_simplified = True
+        else:
             return MethodResult(
                 success=False,
                 output_dir=output_dir,
-                error_message="No DNG RAW files found. This method requires RAW camera files."
+                error_message="No image files found. Provide a directory with DNG, PNG, or JPEG files."
             )
 
         output_path = output_dir / "super_resolved.png"
 
+        # Set environment for cache directories
+        env = os.environ.copy()
+        env["MPLCONFIGDIR"] = "/tmp/claude/matplotlib"
+        env["TORCH_HOME"] = "/tmp/claude/torch_cache"
+        env["TMPDIR"] = "/tmp/claude"
+        env["OMP_NUM_THREADS"] = "1"
+        env["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+        # Ensure cache directories exist
+        for d in ["/tmp/claude/matplotlib", "/tmp/claude/torch_cache"]:
+            Path(d).mkdir(parents=True, exist_ok=True)
+
+        # Select script based on input type
+        if use_simplified:
+            script = self.METHOD_DIR / "demo_simple.py"
+            if not script.exists():
+                return MethodResult(
+                    success=False,
+                    output_dir=output_dir,
+                    error_message="Simplified script not found and rawpy not installed for DNG support."
+                )
+        else:
+            script = self.METHOD_DIR / "demo.py"
+
         cmd = [
             sys.executable,
-            str(self.METHOD_DIR / "demo.py"),
+            str(script),
             "--impath", str(input_path),
             "--outpath", str(output_path),
             "--scale", str(params.get("scale", 2.0)),
@@ -95,15 +135,22 @@ class BurstSuperResMethod(IPOLMethod):
                 cwd=str(self.METHOD_DIR),
                 capture_output=True,
                 text=True,
-                timeout=600  # Longer timeout for burst processing
+                timeout=600,  # Longer timeout for burst processing
+                env=env
             )
 
             if output_path.exists():
+                outputs = {"super_resolved": output_path}
+                # Check for additional outputs
+                for pattern in ["*_ref.png", "*_robustness.png", "input_0*.png", "robustness_map*.png"]:
+                    for f in output_dir.glob(pattern):
+                        outputs[f.stem] = f
+
                 return MethodResult(
                     success=True,
                     output_dir=output_dir,
                     primary_output=output_path,
-                    outputs={"super_resolved": output_path}
+                    outputs=outputs
                 )
 
             error_msg = result.stderr if result.stderr else result.stdout

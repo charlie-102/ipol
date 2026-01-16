@@ -36,6 +36,10 @@ class TSNEMethod(IPOLMethod):
         return InputType.DATASET_ID
 
     @property
+    def input_count(self) -> int:
+        return 0  # Uses sklearn datasets, no file input required
+
+    @property
     def requirements_file(self):
         # Note: requires iio package (uses iio_shim)
         return None
@@ -106,13 +110,13 @@ class TSNEMethod(IPOLMethod):
         use_pca = params.get("use_pca", True)
         pca_components = params.get("pca_components", 50)
 
-        # Build command
+        # Build command using the core script (no seaborn dependency)
         output_naive = output_dir / "tsne_naive.png"
         output_bh = output_dir / "tsne_barnes_hut.png"
 
         cmd = [
             sys.executable,
-            str(self.METHOD_DIR / "naive_tsne_vs_barnes_hut_tsne.py"),
+            str(self.METHOD_DIR / "tsne_core.py"),
             "--dataset", dataset,
             "--n_samples", str(n_samples),
             "--perplexity", str(perplexity),

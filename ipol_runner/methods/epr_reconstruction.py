@@ -40,7 +40,7 @@ class EPRReconstructionMethod(IPOLMethod):
 
     @property
     def input_count(self) -> int:
-        return 2  # Sinogram + spectrum files
+        return 0  # Uses built-in datasets, no file input required
 
     @property
     def requirements_file(self):

@@ -40,7 +40,11 @@ class LatentDiffusionMethod(IPOLMethod):
 
     @property
     def requires_cuda(self) -> bool:
-        return True  # Requires NVIDIA GPU for diffusion model
+        return False  # Can run on CPU, MPS, or CUDA (HuggingFace handles device)
+
+    @property
+    def supports_mps(self) -> bool:
+        return True  # HuggingFace Accelerate handles MPS
 
     def get_parameters(self) -> Dict[str, Dict[str, Any]]:
         return {
@@ -50,6 +54,12 @@ class LatentDiffusionMethod(IPOLMethod):
                 "min": 100,
                 "max": 2000,
                 "description": "Denoising steps (higher = better quality, slower)"
+            },
+            "device": {
+                "type": "choice",
+                "choices": ["cuda", "mps", "cpu"],
+                "default": "cpu",
+                "description": "Device for inference (cuda, mps for Apple Silicon, or cpu)"
             }
         }
 
@@ -61,10 +71,13 @@ class LatentDiffusionMethod(IPOLMethod):
     ) -> MethodResult:
         input_path = inputs[0]
 
+        device = params.get("device", "cpu")
+
         cmd = [
             sys.executable, str(self.METHOD_DIR / "run_demo.py"),
             "--img_path", str(input_path),
             "--time_steps", str(params.get("time_steps", 1000)),
+            "--device", device,
         ]
 
         try:

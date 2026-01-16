@@ -38,6 +38,14 @@ class MPRNetMethod(IPOLMethod):
     def requirements_file(self):
         return self.METHOD_DIR / "requirements.txt"
 
+    @property
+    def requires_cuda(self) -> bool:
+        return False  # Can run on CPU, MPS, or CUDA
+
+    @property
+    def supports_mps(self) -> bool:
+        return True  # Supports Apple MPS backend
+
     def get_parameters(self) -> Dict[str, Dict[str, Any]]:
         return {
             "task": {
@@ -57,6 +65,12 @@ class MPRNetMethod(IPOLMethod):
                 "min": 1,
                 "max": 100,
                 "description": "Noise sigma (if add_noise=True)"
+            },
+            "device": {
+                "type": "choice",
+                "choices": ["cuda", "mps", "cpu"],
+                "default": "cpu",
+                "description": "Device for inference (cuda, mps for Apple Silicon, or cpu)"
             }
         }
 
@@ -71,6 +85,7 @@ class MPRNetMethod(IPOLMethod):
         task = params.get("task", "denoising")
         add_noise = params.get("add_noise", False)
         sigma = params.get("sigma", 25)
+        device = params.get("device", "cpu")
 
         # Select script based on task
         script_map = {
@@ -93,23 +108,37 @@ class MPRNetMethod(IPOLMethod):
             )
 
         # Build command - script uses sys.argv
-        cmd = [
-            sys.executable,
-            str(script),
-            str(input_path),
-            str(output_dir),
-            "1" if add_noise else "0",
-        ]
-        if add_noise:
-            cmd.append(str(sigma))
+        # For denoising: input, output, add_noise, [sigma], device
+        # For deblurring/deraining: input, output, device
+        if task == "denoising":
+            cmd = [
+                sys.executable,
+                str(script),
+                str(input_path),
+                str(output_dir),
+                "1" if add_noise else "0",
+            ]
+            if add_noise:
+                cmd.append(str(sigma))
+            cmd.append(device)
+        else:
+            cmd = [
+                sys.executable,
+                str(script),
+                str(input_path),
+                str(output_dir),
+                device,
+            ]
 
         try:
+            # Longer timeout for CPU, shorter for GPU
+            timeout = 120 if device in ["cuda", "mps"] else 600
             result = subprocess.run(
                 cmd,
                 cwd=str(self.METHOD_DIR),
                 capture_output=True,
                 text=True,
-                timeout=300
+                timeout=timeout
             )
 
             # Check for outputs
@@ -148,7 +177,7 @@ class MPRNetMethod(IPOLMethod):
             return MethodResult(
                 success=False,
                 output_dir=output_dir,
-                error_message="Method timed out after 300s"
+                error_message=f"Method timed out after {timeout}s (try using --param device=mps or device=cuda for faster processing)"
             )
         except Exception as e:
             return MethodResult(

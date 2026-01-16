@@ -37,7 +37,11 @@ class IColoriTMethod(IPOLMethod):
 
     @property
     def requires_cuda(self) -> bool:
-        return True
+        return False  # Can run on CPU, MPS, or CUDA
+
+    @property
+    def supports_mps(self) -> bool:
+        return True  # Supports Apple MPS backend
 
     @property
     def requirements_file(self):
@@ -74,9 +78,9 @@ class IColoriTMethod(IPOLMethod):
             },
             "device": {
                 "type": "choice",
-                "choices": ["cuda", "cpu"],
-                "default": "cuda",
-                "description": "Device for inference"
+                "choices": ["cuda", "mps", "cpu"],
+                "default": "cpu",
+                "description": "Device for inference (cuda, mps for Apple Silicon, or cpu)"
             }
         }
 

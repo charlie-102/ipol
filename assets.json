@@ -1,0 +1,85 @@
+{
+  "version": "1.0",
+  "provider": "huggingface",
+  "repo_id": "ipol-project/method-assets",
+  "description": "Large model weights and datasets for IPOL methods",
+  "assets": {
+    "mprnet/model_denoising.pth": {
+      "size": 20989831,
+      "sha256": "",
+      "local_path": "methods/ipol_2023_446_mprnet/pretrained_models/model_denoising.pth",
+      "method": "mprnet",
+      "description": "MPRNet denoising model weights"
+    },
+    "mprnet/model_deraining.pth": {
+      "size": 20989831,
+      "sha256": "",
+      "local_path": "methods/ipol_2023_446_mprnet/pretrained_models/model_deraining.pth",
+      "method": "mprnet",
+      "description": "MPRNet deraining model weights"
+    },
+    "mprnet/model_deblurring.pth": {
+      "size": 20989831,
+      "sha256": "",
+      "local_path": "methods/ipol_2023_446_mprnet/pretrained_models/model_deblurring.pth",
+      "method": "mprnet",
+      "description": "MPRNet deblurring model weights"
+    },
+    "phinet/phinet_model.pth": {
+      "size": 61500000,
+      "sha256": "",
+      "local_path": "methods/ipol_2024_549_phinet/model_weights/phinet_model.pth",
+      "method": "phinet",
+      "description": "Phi-Net InSAR denoising weights"
+    },
+    "phinet/phinet_model_real.pth": {
+      "size": 61500000,
+      "sha256": "",
+      "local_path": "methods/ipol_2024_549_phinet/model_weights/phinet_model_real.pth",
+      "method": "phinet",
+      "description": "Phi-Net real data weights"
+    },
+    "ganet/GANet.pth": {
+      "size": 76000000,
+      "sha256": "",
+      "local_path": "methods/ipol_2023_441_ganet/checkpoints/GANet.pth",
+      "method": "ganet",
+      "description": "GANet stereo matching weights"
+    },
+    "monocular_depth/midas_v21_small.pt": {
+      "size": 47000000,
+      "sha256": "",
+      "local_path": "methods/ipol_2023_459_monocular_depth/MiDaS-main/weights/midas_v21_small.pt",
+      "method": "monocular_depth",
+      "description": "MiDaS small model weights"
+    },
+    "segmentation_zoo/fcn_r101-d8_512x512_160k_ade20k_20200615_105816-fd192bd5.pth": {
+      "size": 512000000,
+      "sha256": "",
+      "local_path": "methods/ipol_2023_447_segmentation_zoo/checkpoints/fcn_r101-d8_512x512_160k_ade20k_20200615_105816-fd192bd5.pth",
+      "method": "segmentation_zoo",
+      "description": "FCN-R101 segmentation checkpoint"
+    },
+    "homography/superpoint_v1.pth": {
+      "size": 23000000,
+      "sha256": "",
+      "local_path": "methods/ipol_2023_356_homography/pretrained_models/superpoint_v1.pth",
+      "method": "homography",
+      "description": "SuperPoint feature extraction weights"
+    },
+    "homography/indoor_latest.pth": {
+      "size": 35000000,
+      "sha256": "",
+      "local_path": "methods/ipol_2023_356_homography/pretrained_models/indoor_latest.pth",
+      "method": "homography",
+      "description": "Homography estimation indoor weights"
+    },
+    "homography/outdoor_latest.pth": {
+      "size": 35000000,
+      "sha256": "",
+      "local_path": "methods/ipol_2023_356_homography/pretrained_models/outdoor_latest.pth",
+      "method": "homography",
+      "description": "Homography estimation outdoor weights"
+    }
+  }
+}

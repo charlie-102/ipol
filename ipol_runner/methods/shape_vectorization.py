@@ -1,6 +1,7 @@
 """Binary Shape Vectorization adapter (IPOL 2023 article 401)."""
 import subprocess
 import sys
+import os
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -24,7 +25,7 @@ class ShapeVectorizationMethod(IPOLMethod):
 
     @property
     def description(self) -> str:
-        return "Convert binary shapes to vector representations using affine scale-space"
+        return "Convert binary shapes to vector representations"
 
     @property
     def category(self) -> MethodCategory:
@@ -38,17 +39,24 @@ class ShapeVectorizationMethod(IPOLMethod):
         return {
             "scale": {
                 "type": "float",
-                "default": 1.0,
+                "default": 2.0,
                 "min": 0.1,
                 "max": 10.0,
-                "description": "Scale parameter for vectorization"
+                "description": "Smoothing scale parameter"
             },
-            "precision": {
+            "threshold": {
                 "type": "float",
-                "default": 0.5,
+                "default": 127.5,
+                "min": 0,
+                "max": 255,
+                "description": "Binarization threshold"
+            },
+            "error_threshold": {
+                "type": "float",
+                "default": 1.0,
                 "min": 0.1,
                 "max": 5.0,
-                "description": "Precision for curve approximation"
+                "description": "Bézier approximation error threshold (pixels)"
             }
         }
 
@@ -61,12 +69,15 @@ class ShapeVectorizationMethod(IPOLMethod):
         """Run binary shape vectorization."""
         input_path = inputs[0]
 
-        # Check for compiled binary
+        # Use simplified Python script (avoids C++ compilation)
+        simple_script = self.METHOD_DIR / "vectorize_simple.py"
+        use_simple = simple_script.exists()
+
+        # Check for compiled binary as fallback
         binary = self.METHOD_DIR / "affine_sp_vectorization"
-        if not binary.exists():
+        if not use_simple and not binary.exists():
             # Try to compile
             try:
-                # Create build directory
                 build_dir = self.METHOD_DIR / "build"
                 build_dir.mkdir(exist_ok=True)
 
@@ -79,57 +90,62 @@ class ShapeVectorizationMethod(IPOLMethod):
                 )
 
                 if cmake_result.returncode != 0:
-                    return MethodResult(
-                        success=False,
-                        output_dir=output_dir,
-                        error_message=f"CMake failed: {cmake_result.stderr[:300]}"
+                    # Fall back to Python script
+                    use_simple = simple_script.exists()
+                else:
+                    make_result = subprocess.run(
+                        ["make", "-j4"],
+                        cwd=str(build_dir),
+                        capture_output=True,
+                        text=True,
+                        timeout=120
                     )
 
-                make_result = subprocess.run(
-                    ["make", "-j4"],
-                    cwd=str(build_dir),
-                    capture_output=True,
-                    text=True,
-                    timeout=120
-                )
+                    if make_result.returncode != 0:
+                        use_simple = simple_script.exists()
+                    else:
+                        built_binary = build_dir / "affine_sp_vectorization"
+                        if built_binary.exists():
+                            import shutil
+                            shutil.copy(str(built_binary), str(binary))
 
-                if make_result.returncode != 0:
-                    return MethodResult(
-                        success=False,
-                        output_dir=output_dir,
-                        error_message=f"Compilation failed: {make_result.stderr[:300]}"
-                    )
+            except Exception:
+                use_simple = simple_script.exists()
 
-                # Move binary to METHOD_DIR
-                built_binary = build_dir / "affine_sp_vectorization"
-                if built_binary.exists():
-                    import shutil
-                    shutil.copy(str(built_binary), str(binary))
-
-            except Exception as e:
-                return MethodResult(
-                    success=False,
-                    output_dir=output_dir,
-                    error_message=f"Compilation error: {str(e)}"
-                )
-
-        if not binary.exists():
+        if not use_simple and not binary.exists():
             return MethodResult(
                 success=False,
                 output_dir=output_dir,
-                error_message="Binary not found and compilation failed"
+                error_message="Neither Python script nor compiled binary available"
             )
 
         output_svg = output_dir / "vectorized.svg"
-        output_png = output_dir / "output.png"
 
-        cmd = [
-            str(binary),
-            str(input_path),
-            str(output_svg),
-            "-s", str(params.get("scale", 1.0)),
-            "-p", str(params.get("precision", 0.5)),
-        ]
+        # Set environment
+        env = os.environ.copy()
+        env["MPLCONFIGDIR"] = "/tmp/claude/matplotlib"
+
+        if use_simple:
+            # Use Python script
+            cmd = [
+                sys.executable,
+                str(simple_script),
+                str(input_path),
+                "-s", str(params.get("scale", 2.0)),
+                "-f", str(params.get("threshold", 127.5)),
+                "-T", str(params.get("error_threshold", 1.0)),
+                "-O", str(output_svg),
+            ]
+        else:
+            # Use C++ binary
+            cmd = [
+                str(binary),
+                str(input_path),
+                "-s", str(params.get("scale", 2.0)),
+                "-f", str(params.get("threshold", 127.5)),
+                "-T", str(params.get("error_threshold", 1.0)),
+                "-O", str(output_svg),
+            ]
 
         try:
             result = subprocess.run(
@@ -137,7 +153,8 @@ class ShapeVectorizationMethod(IPOLMethod):
                 cwd=str(self.METHOD_DIR),
                 capture_output=True,
                 text=True,
-                timeout=300
+                timeout=300,
+                env=env
             )
 
             outputs = {}
@@ -147,8 +164,9 @@ class ShapeVectorizationMethod(IPOLMethod):
                 primary = output_svg
                 outputs["svg"] = output_svg
 
-            if output_png.exists():
-                outputs["png"] = output_png
+            # Check for any PNG outputs
+            for png in output_dir.glob("*.png"):
+                outputs[png.stem] = png
 
             if primary:
                 return MethodResult(

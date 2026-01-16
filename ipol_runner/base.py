@@ -90,6 +90,37 @@ class IPOLMethod(ABC):
         """Whether this method requires IPOL Docker infrastructure."""
         return False
 
+    @property
+    def supports_mps(self) -> bool:
+        """Whether this method supports Apple MPS backend.
+
+        Override in subclasses that have been adapted for MPS.
+        """
+        return False
+
+    @property
+    def supports_cpu(self) -> bool:
+        """Whether this method can run on CPU (may be slow).
+
+        Most methods support CPU as fallback. Override if not.
+        """
+        return True
+
+    @property
+    def device_choices(self) -> List[str]:
+        """Available device choices for this method.
+
+        Returns list of device names this method can use.
+        """
+        choices = []
+        if self.supports_cpu:
+            choices.append("cpu")
+        if self.supports_mps:
+            choices.append("mps")
+        if self.requires_cuda:
+            choices.append("cuda")
+        return choices if choices else ["cpu"]
+
     @abstractmethod
     def get_parameters(self) -> Dict[str, Dict[str, Any]]:
         """Return parameter schema with defaults and descriptions.

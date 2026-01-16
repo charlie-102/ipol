@@ -4,7 +4,7 @@ Homography fitting from local affine maps using RANSAC variants.
 """
 import subprocess
 import sys
-import shutil
+import os
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -28,7 +28,7 @@ class HomographyMethod(IPOLMethod):
 
     @property
     def description(self) -> str:
-        return "Estimate homography between images using affine RANSAC methods"
+        return "Estimate homography between images using SIFT and RANSAC"
 
     @property
     def category(self) -> MethodCategory:
@@ -48,43 +48,26 @@ class HomographyMethod(IPOLMethod):
 
     def get_parameters(self) -> Dict[str, Dict[str, Any]]:
         return {
-            "detector": {
-                "type": "choice",
-                "choices": ["SIFT", "HessAff"],
-                "default": "SIFT",
-                "description": "Keypoint detector"
-            },
-            "descriptor": {
-                "type": "choice",
-                "choices": ["AID", "HardNet"],
-                "default": "AID",
-                "description": "Feature descriptor"
-            },
-            "affmaps": {
-                "type": "choice",
-                "choices": ["locate", "affnet", "simple"],
-                "default": "locate",
-                "description": "Affine map estimation method"
-            },
-            "gfilter": {
-                "type": "choice",
-                "choices": ["Aff_H_0", "Aff_H_1", "Aff_H_2", "Aff_O_0", "Aff_O_1", "Aff_O_2"],
-                "default": "Aff_H_2",
-                "description": "Geometric filter (RANSAC variant)"
-            },
-            "precision": {
-                "type": "float",
-                "default": 24.0,
-                "min": 1.0,
-                "max": 100.0,
-                "description": "Precision of symmetric transfer error"
-            },
-            "ransac_iters": {
+            "max_keypoints": {
                 "type": "int",
-                "default": 1000,
+                "default": 2000,
                 "min": 100,
                 "max": 10000,
-                "description": "Number of RANSAC iterations"
+                "description": "Maximum number of SIFT keypoints"
+            },
+            "ratio_threshold": {
+                "type": "float",
+                "default": 0.75,
+                "min": 0.5,
+                "max": 1.0,
+                "description": "Lowe's ratio test threshold"
+            },
+            "ransac_threshold": {
+                "type": "float",
+                "default": 5.0,
+                "min": 1.0,
+                "max": 20.0,
+                "description": "RANSAC reprojection error threshold (pixels)"
             }
         }
 
@@ -102,35 +85,56 @@ class HomographyMethod(IPOLMethod):
                 error_message="Two images required for homography estimation"
             )
 
-        # Check for compiled library
-        lib_path = self.METHOD_DIR / "libDA.so"
-        if not lib_path.exists():
-            # Try .dylib on macOS
-            lib_path = self.METHOD_DIR / "libDA.dylib"
-        if not lib_path.exists():
-            return MethodResult(
-                success=False,
-                output_dir=output_dir,
-                error_message="C++ library not compiled. Run: cd methods/ipol_2023_356_homography && mkdir build && cd build && cmake .. && make && mv libDA.so .."
-            )
-
         img1 = inputs[0]
         img2 = inputs[1]
 
-        # Build command
-        cmd = [
-            sys.executable,
-            str(self.METHOD_DIR / "main.py"),
-            "--im1", str(img1),
-            "--im2", str(img2),
-            "--detector", params.get("detector", "SIFT"),
-            "--descriptor", params.get("descriptor", "AID"),
-            "--affmaps", params.get("affmaps", "locate"),
-            "--gfilter", params.get("gfilter", "Aff_H_2"),
-            "--precision", str(params.get("precision", 24.0)),
-            "--ransac_iters", str(params.get("ransac_iters", 1000)),
-            "--workdir", str(output_dir) + "/"
-        ]
+        # Use simplified Python script (avoids C++ library and TensorFlow)
+        simple_script = self.METHOD_DIR / "homography_simple.py"
+        use_simple = simple_script.exists()
+
+        # Check for original C++ library as fallback
+        lib_path = self.METHOD_DIR / "libDA.so"
+        if not lib_path.exists():
+            lib_path = self.METHOD_DIR / "libDA.dylib"
+
+        if not use_simple and not lib_path.exists():
+            return MethodResult(
+                success=False,
+                output_dir=output_dir,
+                error_message="Neither simplified script nor C++ library available"
+            )
+
+        # Set environment
+        env = os.environ.copy()
+        env["MPLCONFIGDIR"] = "/tmp/claude/matplotlib"
+        env["OMP_NUM_THREADS"] = "1"
+
+        if use_simple:
+            cmd = [
+                sys.executable,
+                str(simple_script),
+                "--im1", str(img1),
+                "--im2", str(img2),
+                "--workdir", str(output_dir),
+                "--max_keypoints", str(params.get("max_keypoints", 2000)),
+                "--ratio_threshold", str(params.get("ratio_threshold", 0.75)),
+                "--ransac_threshold", str(params.get("ransac_threshold", 5.0)),
+            ]
+        else:
+            # Original script with C++ library
+            cmd = [
+                sys.executable,
+                str(self.METHOD_DIR / "main.py"),
+                "--im1", str(img1),
+                "--im2", str(img2),
+                "--detector", "SIFT",
+                "--descriptor", "AID",
+                "--affmaps", "locate",
+                "--gfilter", "Aff_H_2",
+                "--precision", "24.0",
+                "--ransac_iters", "1000",
+                "--workdir", str(output_dir) + "/"
+            ]
 
         try:
             result = subprocess.run(
@@ -138,7 +142,8 @@ class HomographyMethod(IPOLMethod):
                 cwd=str(self.METHOD_DIR),
                 capture_output=True,
                 text=True,
-                timeout=300
+                timeout=300,
+                env=env
             )
 
             # Check for outputs

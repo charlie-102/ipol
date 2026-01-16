@@ -124,8 +124,8 @@ def test_method(
             mark_skipped_docker(method_name)
         return False, msg
 
-    # Handle DATASET_ID type - no file inputs needed
-    if method.input_type == InputType.DATASET_ID:
+    # Handle methods with no file inputs needed (DATASET_ID type or input_count=0)
+    if method.input_type == InputType.DATASET_ID or method.input_count == 0:
         inputs = []
     else:
         # Get sample inputs

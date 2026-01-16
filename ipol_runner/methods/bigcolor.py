@@ -37,7 +37,11 @@ class BigColorMethod(IPOLMethod):
 
     @property
     def requires_cuda(self) -> bool:
-        return True
+        return False  # Can run on CPU, MPS, or CUDA
+
+    @property
+    def supports_mps(self) -> bool:
+        return True  # Supports Apple MPS backend
 
     @property
     def requirements_file(self):
@@ -86,9 +90,9 @@ class BigColorMethod(IPOLMethod):
             },
             "device": {
                 "type": "choice",
-                "choices": ["cuda:0", "cpu"],
+                "choices": ["cuda:0", "mps", "cpu"],
                 "default": "cpu",
-                "description": "Device for inference"
+                "description": "Device for inference (cuda:0, mps for Apple Silicon, or cpu)"
             }
         }
 

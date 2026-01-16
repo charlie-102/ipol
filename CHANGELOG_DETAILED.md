@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 ### Added
+- Committed 22 new method adapters: 15 IPOL 2023 + 7 preprints #ipol #git (2026-01-16) [#ffda]
+  - IPOL 2023: bsde_denoising, video_noise, epr_reconstruction, mprnet, mesh_compression, burst_superres, federated_learning, ganet, chromatic_aberration, segmentation_zoo, opencco, signal_decomposition, monocular_depth, homography, shape_vectorization
+  - Preprints: fpn_reduction, spherical_splines, emvd_video_denoising, image_matting, siamte, voronoi_segmentation, bsde_segmentation
 - `plan_load.sh` hook script for session start context display #session-memory #workflow (2026-01-15) [#eabb]
   - Files: `~/.claude/scripts/plan_load.sh`
 - `.claude/plan.md` persistent project memory template #session-memory (2026-01-15) [#eabb]
@@ -64,3 +67,5 @@
   - Files: `ipol_runner/base.py`, `ipol_runner/testing.py`
 - **Gotcha**: .gitignore `methods/` pattern catches any path containing `methods/` - use `/methods/` for root-only matching to avoid excluding `ipol_runner/methods/` #git (2026-01-15) [#b69f]
   - Files: `.gitignore`
+- **Pattern**: Delete ZIP archives after extraction - downloaded ZIPs remain redundant after extraction, 35 files totaling 429MB in this project #cleanup #storage (2026-01-16) [#ffda]
+- **Gotcha**: HEREDOC in git commit fails in Claude sandbox ("can't create temp file for here document") - use direct quoted strings instead #git #sandbox (2026-01-16) [#ffda]

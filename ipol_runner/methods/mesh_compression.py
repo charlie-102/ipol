@@ -39,7 +39,7 @@ class MeshCompressionMethod(IPOLMethod):
 
     @property
     def input_count(self) -> int:
-        return 1
+        return 0  # Uses built-in test mesh if no input provided
 
     @property
     def requirements_file(self):

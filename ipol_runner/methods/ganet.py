@@ -10,9 +10,16 @@ from ..registry import register
 
 @register
 class GANetMethod(IPOLMethod):
-    """Guided aggregation network for end-to-end stereo matching."""
+    """Guided aggregation network for end-to-end stereo matching.
+
+    Note: This method requires custom CUDA extensions (libs.GANet.modules).
+    """
 
     METHOD_DIR = Path(__file__).parent.parent.parent / "methods" / "ipol_2023_441_ganet"
+
+    @property
+    def requires_cuda(self) -> bool:
+        return True  # Requires custom CUDA extensions
 
     @property
     def name(self) -> str:
@@ -102,12 +109,17 @@ class GANetMethod(IPOLMethod):
         ]
 
         try:
+            import os
+            env = os.environ.copy()
+            env["MPLCONFIGDIR"] = "/tmp/claude/matplotlib"
+
             result = subprocess.run(
                 cmd,
                 cwd=str(self.METHOD_DIR),
                 capture_output=True,
                 text=True,
-                timeout=600
+                timeout=600,
+                env=env
             )
 
             outputs = {}

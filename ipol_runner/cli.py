@@ -218,6 +218,87 @@ def cmd_status(args):
     return 0
 
 
+def cmd_devices(args):
+    """Show available compute devices."""
+    from .device_utils import print_device_info
+    print_device_info()
+
+    # Also show methods that support each device
+    print()
+    print("Methods with MPS Support:")
+    print("-" * 40)
+    methods = get_all_methods()
+    mps_methods = [name for name, m in methods.items() if m.supports_mps]
+    if mps_methods:
+        for name in sorted(mps_methods):
+            print(f"  - {name}")
+    else:
+        print("  (none)")
+
+    return 0
+
+
+def cmd_web(args):
+    """Start web interface."""
+    try:
+        import uvicorn
+    except ImportError:
+        print("Error: uvicorn not installed. Install with: pip install uvicorn[standard]")
+        return 1
+
+    print(f"Starting IPOL Runner web interface on http://{args.host}:{args.port}")
+    print("Press Ctrl+C to stop")
+
+    uvicorn.run(
+        "ipol_runner.web.app:app",
+        host=args.host,
+        port=args.port,
+        reload=False
+    )
+    return 0
+
+
+def cmd_assets(args):
+    """Manage large model assets."""
+    from .assets import AssetManager, print_asset_status
+
+    if args.assets_command == "status" or args.assets_command is None:
+        print_asset_status()
+        return 0
+
+    manager = AssetManager()
+
+    if args.assets_command == "download":
+        assets = manager.list_assets()
+
+        if args.method:
+            # Download assets for specific method
+            method_assets = [a for a in assets if a.get('method') == args.method]
+            if not method_assets:
+                print(f"No assets found for method: {args.method}")
+                return 1
+            for asset in method_assets:
+                print(f"Downloading {asset['key']}...")
+                manager.download_asset(asset['key'])
+        elif args.all:
+            # Download all assets
+            for asset in assets:
+                print(f"Downloading {asset['key']}...")
+                manager.download_asset(asset['key'])
+        else:
+            print("Specify --method or --all")
+            return 1
+        return 0
+
+    if args.assets_command == "clear":
+        older_than = getattr(args, 'older_than', None)
+        manager.clear_cache(older_than_days=older_than)
+        return 0
+
+    print("Unknown assets command")
+    return 1
+
+
 def cmd_deps(args):
     """Install dependencies for a method."""
     import subprocess
@@ -354,6 +435,24 @@ def create_parser() -> argparse.ArgumentParser:
     # status command
     subparsers.add_parser("status", help="Show validation status of all methods")
 
+    # devices command
+    subparsers.add_parser("devices", help="Show available compute devices (CPU, CUDA, MPS)")
+
+    # web command
+    web_p = subparsers.add_parser("web", help="Start web interface")
+    web_p.add_argument("--port", type=int, default=8000, help="Port to run on (default: 8000)")
+    web_p.add_argument("--host", default="127.0.0.1", help="Host to bind to (default: 127.0.0.1)")
+
+    # assets command
+    assets_p = subparsers.add_parser("assets", help="Manage large model assets")
+    assets_sub = assets_p.add_subparsers(dest="assets_command")
+    assets_sub.add_parser("status", help="Show asset cache status")
+    assets_download_p = assets_sub.add_parser("download", help="Download assets")
+    assets_download_p.add_argument("-m", "--method", help="Download assets for a specific method")
+    assets_download_p.add_argument("-a", "--all", action="store_true", help="Download all assets")
+    assets_clear_p = assets_sub.add_parser("clear", help="Clear asset cache")
+    assets_clear_p.add_argument("--older-than", type=int, help="Only clear files older than N days")
+
     return parser
 
 
@@ -378,6 +477,12 @@ def main(argv: Optional[List[str]] = None):
         return cmd_test(args)
     elif args.command == "status":
         return cmd_status(args)
+    elif args.command == "devices":
+        return cmd_devices(args)
+    elif args.command == "web":
+        return cmd_web(args)
+    elif args.command == "assets":
+        return cmd_assets(args)
     else:
         parser.print_help()
         return 1

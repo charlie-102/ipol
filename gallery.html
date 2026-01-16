@@ -1,0 +1,1040 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPOL Runner - Method Gallery</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --accent-color: #2196F3;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        header h1 { font-size: 1.8em; font-weight: 600; }
+        header p { opacity: 0.9; margin-top: 5px; }
+
+        /* Navigation */
+        nav {
+            background: white;
+            padding: 15px 40px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+
+        nav a:hover, nav a.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Filters */
+        .filters {
+            padding: 20px 40px;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .filter-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .search-box {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            width: 250px;
+            font-size: 0.95em;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        /* Main content */
+        main {
+            padding: 30px 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-item .number {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .stat-item .label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        /* Category sections */
+        .category-section {
+            margin-bottom: 40px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .category-icon {
+            font-size: 1.5em;
+        }
+
+        .category-title {
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        .category-count {
+            background: var(--bg-color);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        /* Method cards grid */
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .method-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .method-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .method-card-header {
+            padding: 15px 20px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .method-card-header h3 {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .method-card-header .cli-name {
+            font-family: monospace;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            background: var(--bg-color);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .method-card-header .badges {
+            margin-top: 8px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            font-size: 0.75em;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .status-badge.passed {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-badge.failed {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-badge.cuda {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .status-badge.mps {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .method-card-body {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .method-card-body p {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 12px;
+        }
+
+        .method-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            background: var(--bg-color);
+        }
+
+        .tag.mps { background: #e3f2fd; color: #1565c0; }
+        .tag.cuda { background: #fff3e0; color: #e65100; }
+
+        .method-card-footer {
+            padding: 12px 20px;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-type {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        .run-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background 0.2s;
+        }
+
+        .run-btn:hover {
+            background: #1976D2;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3em;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .param-group {
+            margin-bottom: 20px;
+        }
+
+        .param-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .param-group input, .param-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .param-group .hint {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-color);
+            background: #f8f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent-color);
+            background: #e3f2fd;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #1976D2;
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        /* Results section */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .result-image {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            background: var(--bg-color);
+        }
+
+        .result-info {
+            padding: 15px;
+        }
+
+        .result-info h4 {
+            font-size: 0.95em;
+            margin-bottom: 5px;
+        }
+
+        .result-info .meta {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        /* Comparison view */
+        .comparison-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .comparison-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .comparison-header {
+            padding: 15px;
+            background: var(--bg-color);
+            font-weight: 600;
+        }
+
+        .comparison-image {
+            width: 100%;
+            aspect-ratio: 4/3;
+            object-fit: contain;
+            background: #f0f0f0;
+        }
+
+        .comparison-stats {
+            padding: 15px;
+        }
+
+        .comparison-stats .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-stats .stat:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header, nav, .filters, main {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .methods-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🖼️ IPOL Runner</h1>
+        <p>Image Processing On Line - Method Gallery & Comparison</p>
+    </header>
+
+    <nav>
+        <a href="#" class="active" data-view="gallery">Gallery</a>
+        <a href="#" data-view="compare">Compare</a>
+        <a href="#" data-view="experiments">Experiments</a>
+        <a href="/api/devices" target="_blank">Devices</a>
+    </nav>
+
+    <div class="filters" id="filters">
+        <div class="filter-group">
+            <label>Category:</label>
+            <button class="filter-btn active" data-category="all">All</button>
+        </div>
+        <div class="filter-group">
+            <label>Input:</label>
+            <button class="filter-btn active" data-input="all">All</button>
+        </div>
+        <div class="filter-group">
+            <label>Device:</label>
+            <button class="filter-btn" data-device="mps">MPS</button>
+            <button class="filter-btn" data-device="cuda">CUDA</button>
+        </div>
+        <input type="text" class="search-box" placeholder="Search methods..." id="search">
+    </div>
+
+    <main id="main-content">
+        <div class="stats-bar" id="stats-bar"></div>
+        <div id="gallery-content"></div>
+    </main>
+
+    <!-- Run Method Modal -->
+    <div class="modal-overlay" id="run-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-title">Run Method</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Dynamic content -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitExperiment()">Run</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        // Embedded data for standalone mode
+        const EMBEDDED_DATA = {"methods": [{"name": "armcoda", "display_name": "ARMCODA Movement Analysis", "category": "medical", "input_type": "sensor_data", "description": "Analyze upper-limb movement coordination from motion capture data"}, {"name": "bigcolor", "display_name": "BigColor Image Colorization", "category": "generation", "input_type": "image", "description": "Automatic grayscale image colorization using BigGAN prior"}, {"name": "bsde_denoising", "display_name": "BSDE Image Denoising", "category": "denoising", "input_type": "image", "description": "Denoise images using Backward Stochastic Differential Equations"}, {"name": "bsde_segmentation", "display_name": "BSDE Image Segmentation", "category": "segmentation", "input_type": "image", "description": "Image segmentation using backward stochastic differential equations"}, {"name": "burst_superres", "display_name": "Handheld Burst Super-Resolution", "category": "3d_reconstruction", "input_type": "video", "description": "Enhance resolution from multiple handheld camera frames"}, {"name": "chromatic_aberration", "display_name": "Chromatic Aberration Correction", "category": "denoising", "input_type": "image", "description": "Remove color fringing in images using efficient 1D filtering"}, {"name": "cstrd", "display_name": "CS-TRD Tree Ring Detection", "category": "detection", "input_type": "image", "description": "Detect tree rings in wood cross-section images"}, {"name": "dark_channel", "display_name": "Dark Channel Prior Dehazing", "category": "denoising", "input_type": "image", "description": "Single image dehazing using dark channel prior (C++ or Python backend)"}, {"name": "domain_seg", "display_name": "Domain Generalization Segmentation", "category": "segmentation", "input_type": "image", "description": "Semantic segmentation with domain generalization"}, {"name": "emvd_video_denoising", "display_name": "EMVD Multi-Stage Video Denoising", "category": "denoising", "input_type": "video", "description": "Frame-recurrent video denoising with efficient multi-stage network"}, {"name": "epr_reconstruction", "display_name": "TV-EPR Image Reconstruction", "category": "medical", "input_type": "dataset_id", "description": "Electron Paramagnetic Resonance reconstruction with Total Variation"}, {"name": "federated_learning", "display_name": "One-Shot Federated Learning (FESC)", "category": "detection", "input_type": "dataset_id", "description": "Compare Centralized, Federated, and FESC algorithms for heterogeneous data"}, {"name": "fpn_reduction", "display_name": "Fixed Pattern Noise Reduction", "category": "denoising", "input_type": "video", "description": "Recursive estimation of FPN offset for infrared image sequences"}, {"name": "ganet", "display_name": "GANet Stereo Matching", "category": "3d_reconstruction", "input_type": "image_pair", "description": "Deep stereo matching using guided aggregation for disparity estimation"}, {"name": "gaussian_splatting", "display_name": "Gaussian Splatting", "category": "3d_reconstruction", "input_type": "image", "description": "3D Gaussian Splatting to fit random Gaussians to a target image"}, {"name": "homography", "display_name": "Robust Homography Estimation", "category": "detection", "input_type": "image_pair", "description": "Estimate homography between images using SIFT and RANSAC"}, {"name": "icolorit", "display_name": "iColoriT Interactive Colorization", "category": "generation", "input_type": "image", "description": "Interactive grayscale image colorization with optional color hints"}, {"name": "image_abstraction", "display_name": "Image Abstraction", "category": "generation", "input_type": "image", "description": "Structured abstraction using tree of shapes (C++ or simplified Python)"}, {"name": "image_matting", "display_name": "Natural Image Matting", "category": "segmentation", "input_type": "image_pair", "description": "Closed-form solution to natural image matting"}, {"name": "interactive_seg", "display_name": "Interactive Segmentation", "category": "segmentation", "input_type": "image", "description": "Compare interactive segmentation models with different clicking strategies"}, {"name": "kervrann", "display_name": "Kervrann Change Detector", "category": "change_detection", "input_type": "image_pair", "description": "Symmetric change detection using hypothesis testing (a contrario)"}, {"name": "latent_diffusion", "display_name": "Latent Diffusion Aerial Imagery", "category": "generation", "input_type": "image", "description": "Generate synthetic aerial images from map images using diffusion"}, {"name": "line_segment", "display_name": "Line Segment Detection (Multi-Method)", "category": "detection", "input_type": "image", "description": "Compare 8 line segment detection algorithms including deep learning methods"}, {"name": "mesh_compression", "display_name": "Mesh Compression", "category": "3d_reconstruction", "input_type": "dataset_id", "description": "Compress/decompress triangle meshes (OBJ/OFF)"}, {"name": "monocular_depth", "display_name": "Monocular Depth Estimation", "category": "3d_reconstruction", "input_type": "image", "description": "Depth estimation from single images (MiDaS, DPT, Adabins, GLPDepth)"}, {"name": "mprnet", "display_name": "MPRNet Image Restoration", "category": "denoising", "input_type": "image", "description": "Deep multi-stage network for denoising, deblurring, and deraining"}, {"name": "nerf_specularity", "display_name": "NeRF Specularity (Ref-NeRF vs NRFF)", "category": "3d_reconstruction", "input_type": "dataset_id", "description": "Render specular materials using NeRF with GT/RefNeRF/NRFF comparison"}, {"name": "nerf_vaxnerf", "display_name": "VaxNeRF Accelerated NeRF", "category": "3d_reconstruction", "input_type": "dataset_id", "description": "Neural radiance fields with visual hull acceleration for faster rendering"}, {"name": "noisesniffer", "display_name": "Noisesniffer Forgery Detection", "category": "detection", "input_type": "image", "description": "Detect image forgeries through noise analysis using local noise anomalies"}, {"name": "opencco", "display_name": "OpenCCO Vascular Tree Generation", "category": "generation", "input_type": "dataset_id", "description": "Generate realistic vascular network structures using CCO algorithm"}, {"name": "phase_unwrap", "display_name": "Phase Unwrapping (L1-Norm Delaunay)", "category": "phase_processing", "input_type": "image", "description": "Unwrap wrapped phase images using Delaunay triangulation"}, {"name": "phinet", "display_name": "Phi-Net InSAR Phase Denoising", "category": "phase_processing", "input_type": "image_pair", "description": "Deep residual network for estimating interferometric phase and coherence (PyTorch)"}, {"name": "qmsanet", "display_name": "QMSANet Color Image Denoising", "category": "denoising", "input_type": "image", "description": "Deep learning denoising using quaternion multi-scale attention network"}, {"name": "segmentation_zoo", "display_name": "Semantic Segmentation Zoo", "category": "segmentation", "input_type": "image", "description": "Compare FCN, PSPNet, DeepLabV3+, SETR, Segformer on ADE20K"}, {"name": "semiogram", "display_name": "Semiogram (Gait Analysis)", "category": "medical", "input_type": "sensor_data", "description": "Quantify gait parameters from IMU sensor data"}, {"name": "shape_vectorization", "display_name": "Binary Shape Vectorization", "category": "segmentation", "input_type": "image", "description": "Convert binary shapes to vector representations"}, {"name": "siamte", "display_name": "SiamTE Camera Trace Extraction", "category": "detection", "input_type": "image", "description": "Deep learning camera trace extraction using Siamese networks"}, {"name": "sign_asslisu", "display_name": "Sign Language Segmentation (ASSLiSU)", "category": "segmentation", "input_type": "pose_data", "description": "Segment sign language video into subtitle-units using skeleton data"}, {"name": "sign_lmsls", "display_name": "Sign Language Segmentation (LMSLS)", "category": "segmentation", "input_type": "pose_data", "description": "Segment sign language video using pose estimation and BIO tagging"}, {"name": "signal_decomposition", "display_name": "Signal Decomposition (JOT)", "category": "detection", "input_type": "sensor_data", "description": "Decompose 1D signals into Jump, Oscillation and Trend components"}, {"name": "slavc", "display_name": "SLAVC Sound Localization", "category": "detection", "input_type": "image", "description": "Visual sound source localization using audio-visual deep learning"}, {"name": "spherical_splines", "display_name": "Thin-Plate Splines on Sphere", "category": "detection", "input_type": "dataset_id", "description": "Spherical thin-plate splines for geospatial data interpolation"}, {"name": "storm", "display_name": "STORM Super-Resolution Microscopy", "category": "3d_reconstruction", "input_type": "image", "description": "Single-molecule localization microscopy for super-resolution imaging"}, {"name": "superpixel_color", "display_name": "Superpixel Color Transfer", "category": "generation", "input_type": "image_pair", "description": "Non-local superpixel matching for color transfer and colorization"}, {"name": "survival_forest", "display_name": "LTRC Survival Forest", "category": "medical", "input_type": "sensor_data", "description": "Random forest for left-truncated right-censored survival analysis"}, {"name": "tsne", "display_name": "t-SNE Dimensionality Reduction", "category": "detection", "input_type": "dataset_id", "description": "Compare naive t-SNE vs Barnes-Hut t-SNE for data visualization"}, {"name": "video_noise", "display_name": "Video Noise Estimation", "category": "detection", "input_type": "image_pair", "description": "Estimate signal-dependent noise curves from consecutive video frames"}, {"name": "voronoi_segmentation", "display_name": "Voronoi Page Segmentation", "category": "segmentation", "input_type": "image", "description": "Document layout analysis using area Voronoi diagrams"}], "validation": {"passed": {"semiogram": {"timestamp": "2026-01-15T12:29:51.946972", "output": "semio.svg"}, "nerf_specularity": {"timestamp": "2026-01-15T12:29:40.053050", "output": "merged_image.png"}, "phase_unwrap": {"timestamp": "2026-01-15T12:29:38.856190", "output": "result_raster.tif"}, "qmsanet": {"timestamp": "2026-01-15T12:29:08.595509", "output": "output.png"}, "cstrd": {"timestamp": "2026-01-15T12:40:56.990269", "output": "output.png"}, "kervrann": {"timestamp": "2026-01-15T13:10:51.871945", "output": "huvl.png"}, "dark_channel": {"timestamp": "2026-01-15T20:17:41.161608", "output": "dehazed.png"}, "image_abstraction": {"timestamp": "2026-01-15T20:17:46.778931", "output": "abstraction.png"}, "voronoi_segmentation": {"timestamp": "2026-01-15T21:45:38.426877", "output": "voronoi_9_final_area_voronoi.png"}, "image_matting": {"timestamp": "2026-01-15T21:50:43.263979", "output": "alpha_matte.png"}, "siamte": {"timestamp": "2026-01-15T22:16:07.673666", "output": "output.png"}, "fpn_reduction": {"timestamp": "2026-01-15T22:18:25.249251", "output": "output_0.png"}, "emvd_video_denoising": {"timestamp": "2026-01-15T22:25:07.996677", "output": "output_000.png"}, "federated_learning": {"timestamp": "2026-01-16T04:22:48.709471", "output": "fesc_comparison.png"}, "storm": {"timestamp": "2026-01-16T04:23:23.411546", "output": "ASH.png"}, "tsne": {"timestamp": "2026-01-16T04:39:20.060534", "output": "tsne_barnes_hut.png"}, "armcoda": {"timestamp": "2026-01-16T04:40:18.419348", "output": "analysis_summary.txt"}, "noisesniffer": {"timestamp": "2026-01-16T04:40:42.269826", "output": "distributions.png"}, "epr_reconstruction": {"timestamp": "2026-01-16T04:41:41.306315", "output": "epr_cnrs_logo_DPPH_2D.png"}, "mesh_compression": {"timestamp": "2026-01-16T04:41:41.871307", "output": "test1.mesh"}, "bsde_denoising": {"timestamp": "2026-01-16T06:40:46.788368", "output": "denoised.png"}, "phinet": {"timestamp": "2026-01-16T06:46:54.463012", "output": "phinet_phase.png"}, "video_noise": {"timestamp": "2026-01-16T06:51:51.452089", "output": "curve_s0.png"}, "survival_forest": {"timestamp": "2026-01-16T06:53:27.345325", "output": "survival_curves.png"}, "signal_decomposition": {"timestamp": "2026-01-16T06:55:22.773738", "output": "decomposition.csv"}, "monocular_depth": {"timestamp": "2026-01-16T08:04:48.973361", "output": "F02c.png"}, "segmentation_zoo": {"timestamp": "2026-01-16T08:26:10.414924", "output": "seg.png"}, "burst_superres": {"timestamp": "2026-01-16T08:42:53.409283", "output": "super_resolved.png"}, "shape_vectorization": {"timestamp": "2026-01-16T08:49:05.956963", "output": "vectorized.svg"}, "homography": {"timestamp": "2026-01-16T08:50:32.666363", "output": "all_matches.png"}, "opencco": {"timestamp": "2026-01-16T08:52:56.149079", "output": "vascular_tree.svg"}, "mprnet": {"timestamp": "2026-01-16T09:12:00.000000", "output": "result.png", "notes": "MPS support added. Use --param device=mps for Apple Silicon acceleration. Tested on CPU (MPS unavailable in test env). Runtime: 0.45s (64x64), 4.27s (256x256)."}}, "failed": {"bsde_segmentation": {"timestamp": "2026-01-15T21:45:39.201779", "error": "Failed to compile BSDE segmentation. Requires g++ and libpng-dev.", "notes": ""}, "spherical_splines": {"timestamp": "2026-01-15T21:56:40.175188", "error": "Failed to generate polylog lookup tables", "notes": ""}, "chromatic_aberration": {"timestamp": "2026-01-16T02:17:39.777640", "error": "Failed to compile Cython module: performance hint: filter_cython.pyx:272:0: Exception check on 'grad' will always require the GIL to be acquired.\nPossible solutions:\n\t1. Declare 'grad' as 'noexcept' if you control the definition and you're sure you don't want the function to raise exceptions.\n\t2. Use an 'int' return type on 'grad' to allow an error code to be returned.\n\nError compiling Cython file:\n------------------------------------------------------------\n...\n    cdef DTYPE_t[:, :, ::1] I_out = np.empty((M, N, 3), dtype=DTYP", "notes": ""}}, "skipped_cuda": {"gaussian_splatting": {"timestamp": "2026-01-15T12:29:26.388810", "reason": "Requires NVIDIA CUDA GPU (custom CUDA kernels, no MPS alternative)"}, "superpixel_color": {"timestamp": "2026-01-15T20:17:58.307463", "reason": "Requires NVIDIA CUDA GPU (torch_scatter dependency)"}, "interactive_seg": {"timestamp": "2026-01-15T20:17:58.870910", "reason": "Requires NVIDIA CUDA GPU"}, "domain_seg": {"timestamp": "2026-01-15T20:20:03.307648", "reason": "Requires NVIDIA CUDA GPU"}, "ganet": {"timestamp": "2026-01-16T06:54:03.227037", "reason": "Requires NVIDIA CUDA GPU (custom CUDA extensions)"}}, "mps_enabled": {"bigcolor": {"timestamp": "2026-01-16T09:00:00.000000", "notes": "MPS support added. Use --param device=mps"}, "icolorit": {"timestamp": "2026-01-16T09:00:00.000000", "notes": "MPS support added. Use --param device=mps"}, "latent_diffusion": {"timestamp": "2026-01-16T09:00:00.000000", "notes": "MPS support added. Use --param device=mps"}, "mprnet": {"timestamp": "2026-01-16T09:12:00.000000", "notes": "MPS support added. Use --param device=mps for Apple Silicon acceleration"}}, "skipped_docker": {"sign_lmsls": {"timestamp": "2026-01-15T12:29:51.948078", "reason": "Requires IPOL Docker infrastructure"}, "sign_asslisu": {"timestamp": "2026-01-15T12:29:51.948808", "reason": "Requires IPOL Docker infrastructure"}}}};
+        const STANDALONE_MODE = true;
+        
+
+        // State
+        let methods = [];
+        let experiments = [];
+        let currentMethod = null;
+        let uploadedFiles = [];
+        let validationStatus = {};
+        let activeFilters = {
+            category: 'all',
+            input: 'all',
+            device: null,
+            search: ''
+        };
+
+        // Category styles
+        const CATEGORY_STYLES = {
+            "denoising": { color: "#4CAF50", icon: "🧹", label: "Denoising" },
+            "change_detection": { color: "#2196F3", icon: "🔍", label: "Change Detection" },
+            "detection": { color: "#FF9800", icon: "🎯", label: "Detection" },
+            "segmentation": { color: "#9C27B0", icon: "✂️", label: "Segmentation" },
+            "generation": { color: "#E91E63", icon: "🎨", label: "Generation" },
+            "3d_reconstruction": { color: "#00BCD4", icon: "🏗️", label: "3D Reconstruction" },
+            "phase_processing": { color: "#607D8B", icon: "🌊", label: "Phase Processing" },
+            "medical": { color: "#F44336", icon: "🏥", label: "Medical" },
+        };
+
+        const INPUT_TYPE_ICONS = {
+            "image": "🖼️",
+            "image_pair": "🖼️🖼️",
+            "video": "🎬",
+            "pose_data": "🦴",
+            "sensor_data": "📊",
+            "dataset_id": "📁",
+        };
+
+        // Initialize
+        async function init() {
+            await loadMethods();
+            await loadExperiments();
+            setupFilters();
+            renderGallery();
+        }
+
+        async function loadMethods() {
+            if (STANDALONE_MODE && EMBEDDED_DATA) {
+                methods = EMBEDDED_DATA.methods || [];
+                validationStatus = EMBEDDED_DATA.validation || {};
+            } else {
+                const response = await fetch('/api/methods');
+                methods = await response.json();
+                try {
+                    const valResponse = await fetch('/api/validation');
+                    validationStatus = await valResponse.json();
+                } catch (e) { validationStatus = {}; }
+            }
+        }
+
+        async function loadExperiments() {
+            if (STANDALONE_MODE) {
+                experiments = []; // No experiments in standalone mode
+                return;
+            }
+            const response = await fetch('/api/experiments?limit=50');
+            experiments = await response.json();
+        }
+
+        function setupFilters() {
+            // Get unique categories
+            const categories = [...new Set(methods.map(m => m.category))];
+            const inputs = [...new Set(methods.map(m => m.input_type))];
+
+            // Add category buttons
+            const catGroup = document.querySelector('[data-category="all"]').parentElement;
+            categories.forEach(cat => {
+                const style = CATEGORY_STYLES[cat] || { icon: '📦', label: cat };
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.dataset.category = cat;
+                btn.innerHTML = `${style.icon} ${style.label}`;
+                btn.onclick = () => filterByCategory(cat);
+                catGroup.appendChild(btn);
+            });
+
+            // Add input type buttons
+            const inputGroup = document.querySelector('[data-input="all"]').parentElement;
+            inputs.forEach(inp => {
+                const icon = INPUT_TYPE_ICONS[inp] || '📄';
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.dataset.input = inp;
+                btn.innerHTML = `${icon} ${inp.replace('_', ' ')}`;
+                btn.onclick = () => filterByInput(inp);
+                inputGroup.appendChild(btn);
+            });
+
+            // Setup search
+            document.getElementById('search').oninput = (e) => {
+                activeFilters.search = e.target.value.toLowerCase();
+                renderGallery();
+            };
+
+            // Category all button
+            document.querySelector('[data-category="all"]').onclick = () => filterByCategory('all');
+            document.querySelector('[data-input="all"]').onclick = () => filterByInput('all');
+
+            // Device filters
+            document.querySelector('[data-device="mps"]').onclick = () => filterByDevice('mps');
+            document.querySelector('[data-device="cuda"]').onclick = () => filterByDevice('cuda');
+        }
+
+        function filterByCategory(cat) {
+            activeFilters.category = cat;
+            document.querySelectorAll('[data-category]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.category === cat);
+            });
+            renderGallery();
+        }
+
+        function filterByInput(inp) {
+            activeFilters.input = inp;
+            document.querySelectorAll('[data-input]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.input === inp);
+            });
+            renderGallery();
+        }
+
+        function filterByDevice(device) {
+            const btn = document.querySelector(`[data-device="${device}"]`);
+            if (activeFilters.device === device) {
+                activeFilters.device = null;
+                btn.classList.remove('active');
+            } else {
+                document.querySelectorAll('[data-device]').forEach(b => b.classList.remove('active'));
+                activeFilters.device = device;
+                btn.classList.add('active');
+            }
+            renderGallery();
+        }
+
+        function getFilteredMethods() {
+            return methods.filter(m => {
+                if (activeFilters.category !== 'all' && m.category !== activeFilters.category) return false;
+                if (activeFilters.input !== 'all' && m.input_type !== activeFilters.input) return false;
+                if (activeFilters.search && !m.name.includes(activeFilters.search) &&
+                    !m.display_name.toLowerCase().includes(activeFilters.search)) return false;
+                // Device filter would need method info - simplified for now
+                return true;
+            });
+        }
+
+        function renderGallery() {
+            const filtered = getFilteredMethods();
+
+            // Stats
+            const statsBar = document.getElementById('stats-bar');
+            const categories = [...new Set(filtered.map(m => m.category))];
+            statsBar.innerHTML = `
+                <div class="stat-item">
+                    <div class="number">${filtered.length}</div>
+                    <div class="label">Methods</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number">${categories.length}</div>
+                    <div class="label">Categories</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number">${experiments.filter(e => e.status === 'completed').length}</div>
+                    <div class="label">Experiments</div>
+                </div>
+            `;
+
+            // Group by category
+            const byCategory = {};
+            filtered.forEach(m => {
+                if (!byCategory[m.category]) byCategory[m.category] = [];
+                byCategory[m.category].push(m);
+            });
+
+            // Render
+            const content = document.getElementById('gallery-content');
+            content.innerHTML = Object.entries(byCategory).map(([cat, catMethods]) => {
+                const style = CATEGORY_STYLES[cat] || { color: '#666', icon: '📦', label: cat };
+                return `
+                    <div class="category-section">
+                        <div class="category-header">
+                            <span class="category-icon">${style.icon}</span>
+                            <span class="category-title" style="color: ${style.color}">${style.label}</span>
+                            <span class="category-count">${catMethods.length} methods</span>
+                        </div>
+                        <div class="methods-grid">
+                            ${catMethods.map(m => renderMethodCard(m, style.color)).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderMethodCard(method, accentColor) {
+            const inputIcon = INPUT_TYPE_ICONS[method.input_type] || '📄';
+            const passed = validationStatus.passed && validationStatus.passed[method.name];
+            const failed = validationStatus.failed && validationStatus.failed[method.name];
+            const mpsEnabled = validationStatus.mps_enabled && validationStatus.mps_enabled[method.name];
+            const skippedCuda = validationStatus.skipped_cuda && validationStatus.skipped_cuda[method.name];
+
+            let statusBadge = '';
+            if (passed) statusBadge = '<span class="status-badge passed">✓ Validated</span>';
+            else if (failed) statusBadge = '<span class="status-badge failed">✗ Failed</span>';
+            else if (skippedCuda) statusBadge = '<span class="status-badge cuda">CUDA Required</span>';
+
+            let mpsBadge = mpsEnabled ? '<span class="status-badge mps">MPS</span>' : '';
+
+            return `
+                <div class="method-card" onclick="openRunModal('${method.name}')">
+                    <div class="method-card-header" style="border-color: ${accentColor}">
+                        <h3>${method.display_name}</h3>
+                        <span class="cli-name">${method.name}</span>
+                        <div class="badges">${statusBadge}${mpsBadge}</div>
+                    </div>
+                    <div class="method-card-body">
+                        <p>${method.description || 'No description available'}</p>
+                        <div class="method-tags">
+                            <span class="tag">${method.input_type.replace('_', ' ')}</span>
+                        </div>
+                    </div>
+                    <div class="method-card-footer">
+                        <span class="input-type">${inputIcon} ${method.input_type.replace('_', ' ')}</span>
+                        <button class="run-btn">${STANDALONE_MODE ? 'Info' : 'Run'}</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function openRunModal(methodName) {
+            if (STANDALONE_MODE) {
+                // Find method in embedded data
+                currentMethod = methods.find(m => m.name === methodName);
+                if (!currentMethod) return;
+
+                const passed = validationStatus.passed && validationStatus.passed[methodName];
+                const failed = validationStatus.failed && validationStatus.failed[methodName];
+                const mpsEnabled = validationStatus.mps_enabled && validationStatus.mps_enabled[methodName];
+
+                document.getElementById('modal-title').textContent = currentMethod.display_name;
+                const body = document.getElementById('modal-body');
+                body.innerHTML = `
+                    <div class="method-info">
+                        <p><strong>CLI Name:</strong> <code>${currentMethod.name}</code></p>
+                        <p><strong>Category:</strong> ${currentMethod.category}</p>
+                        <p><strong>Input Type:</strong> ${currentMethod.input_type}</p>
+                        <p><strong>Description:</strong> ${currentMethod.description || 'No description'}</p>
+                        ${passed ? `<p><strong>Status:</strong> <span class="status-badge passed">✓ Validated</span></p>
+                            <p><strong>Output:</strong> ${passed.output || 'N/A'}</p>
+                            ${passed.notes ? `<p><strong>Notes:</strong> ${passed.notes}</p>` : ''}` : ''}
+                        ${failed ? `<p><strong>Status:</strong> <span class="status-badge failed">✗ Failed</span></p>
+                            <p><strong>Error:</strong> ${failed.error || 'Unknown'}</p>` : ''}
+                        ${mpsEnabled ? `<p><strong>MPS Support:</strong> <span class="status-badge mps">Yes</span> - ${mpsEnabled.notes || ''}</p>` : ''}
+                        <div class="cli-example">
+                            <strong>Run command:</strong>
+                            <pre>python -m ipol_runner run ${currentMethod.name} -i &lt;input&gt; -o ./output</pre>
+                        </div>
+                    </div>
+                `;
+                // Hide run button in standalone mode
+                document.querySelector('.modal-footer .btn-primary').style.display = 'none';
+                document.getElementById('run-modal').classList.add('active');
+                return;
+            }
+
+            const response = await fetch(`/api/methods/${methodName}`);
+            currentMethod = await response.json();
+
+            document.getElementById('modal-title').textContent = `Run: ${currentMethod.display_name}`;
+            document.querySelector('.modal-footer .btn-primary').style.display = 'block';
+
+            const body = document.getElementById('modal-body');
+            body.innerHTML = `
+                <div class="param-group">
+                    <label>Input File(s)</label>
+                    <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+                        <input type="file" id="file-input" multiple style="display:none" onchange="handleFileSelect(event)">
+                        <p>📁 Click or drag files here</p>
+                        <p class="hint">Requires: ${currentMethod.input_count} ${currentMethod.input_type} file(s)</p>
+                    </div>
+                    <div id="file-list"></div>
+                </div>
+                ${Object.entries(currentMethod.parameters || {}).map(([key, param]) => `
+                    <div class="param-group">
+                        <label>${key}</label>
+                        ${renderParamInput(key, param)}
+                        <div class="hint">${param.description || ''}</div>
+                    </div>
+                `).join('')}
+            `;
+
+            // Setup drag and drop
+            const uploadArea = document.getElementById('upload-area');
+            uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); };
+            uploadArea.ondragleave = () => uploadArea.classList.remove('dragover');
+            uploadArea.ondrop = (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); handleFiles(e.dataTransfer.files); };
+
+            document.getElementById('run-modal').classList.add('active');
+        }
+
+        function renderParamInput(key, param) {
+            if (param.type === 'choice') {
+                return `<select id="param-${key}">
+                    ${param.choices.map(c => `<option value="${c}" ${c === param.default ? 'selected' : ''}>${c}</option>`).join('')}
+                </select>`;
+            } else if (param.type === 'bool') {
+                return `<select id="param-${key}">
+                    <option value="true" ${param.default ? 'selected' : ''}>true</option>
+                    <option value="false" ${!param.default ? 'selected' : ''}>false</option>
+                </select>`;
+            } else {
+                return `<input type="${param.type === 'int' || param.type === 'float' ? 'number' : 'text'}"
+                    id="param-${key}" value="${param.default || ''}"
+                    ${param.min !== undefined ? `min="${param.min}"` : ''}
+                    ${param.max !== undefined ? `max="${param.max}"` : ''}>`;
+            }
+        }
+
+        function handleFileSelect(event) {
+            handleFiles(event.target.files);
+        }
+
+        async function handleFiles(files) {
+            uploadedFiles = [];
+            const fileList = document.getElementById('file-list');
+            fileList.innerHTML = '<p>Uploading...</p>';
+
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/api/upload', { method: 'POST', body: formData });
+                const result = await response.json();
+                uploadedFiles.push(result);
+            }
+
+            fileList.innerHTML = uploadedFiles.map(f => `<p>✅ ${f.filename}</p>`).join('');
+        }
+
+        async function submitExperiment() {
+            if (uploadedFiles.length === 0) {
+                alert('Please upload at least one file');
+                return;
+            }
+
+            const params = {};
+            Object.keys(currentMethod.parameters || {}).forEach(key => {
+                const input = document.getElementById(`param-${key}`);
+                if (input) {
+                    let value = input.value;
+                    if (currentMethod.parameters[key].type === 'int') value = parseInt(value);
+                    else if (currentMethod.parameters[key].type === 'float') value = parseFloat(value);
+                    else if (currentMethod.parameters[key].type === 'bool') value = value === 'true';
+                    params[key] = value;
+                }
+            });
+
+            const response = await fetch('/api/experiments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    method_name: currentMethod.name,
+                    input_ids: uploadedFiles.map(f => f.id),
+                    parameters: params
+                })
+            });
+
+            const experiment = await response.json();
+            closeModal();
+            alert(`Experiment started: ${experiment.id}`);
+            loadExperiments();
+        }
+
+        function closeModal() {
+            document.getElementById('run-modal').classList.remove('active');
+            currentMethod = null;
+            uploadedFiles = [];
+        }
+
+        // Nav handling
+        document.querySelectorAll('nav a').forEach(link => {
+            link.onclick = (e) => {
+                e.preventDefault();
+                const view = link.dataset.view;
+                document.querySelectorAll('nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                if (view === 'gallery') {
+                    document.getElementById('filters').style.display = 'flex';
+                    renderGallery();
+                } else if (view === 'experiments') {
+                    document.getElementById('filters').style.display = 'none';
+                    renderExperiments();
+                } else if (view === 'compare') {
+                    document.getElementById('filters').style.display = 'none';
+                    renderComparison();
+                }
+            };
+        });
+
+        function renderExperiments() {
+            const content = document.getElementById('gallery-content');
+            content.innerHTML = `
+                <h2>Recent Experiments</h2>
+                <div class="results-grid">
+                    ${experiments.map(e => `
+                        <div class="result-card">
+                            ${e.primary_output ?
+                                `<img class="result-image" src="/api/outputs/${e.id}/${e.primary_output.split('/').pop()}" alt="Result">` :
+                                `<div class="result-image" style="display:flex;align-items:center;justify-content:center;color:#999;">No output</div>`
+                            }
+                            <div class="result-info">
+                                <h4>${e.method_name}</h4>
+                                <div class="meta">
+                                    <span class="status-${e.status}">${e.status}</span>
+                                    ${e.execution_time ? ` • ${e.execution_time.toFixed(1)}s` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderComparison() {
+            const content = document.getElementById('gallery-content');
+            const completed = experiments.filter(e => e.status === 'completed' && e.primary_output);
+
+            content.innerHTML = `
+                <h2>Compare Results</h2>
+                <p>Select experiments to compare:</p>
+                <div class="comparison-container">
+                    ${completed.slice(0, 4).map(e => `
+                        <div class="comparison-item">
+                            <div class="comparison-header">${e.method_name}</div>
+                            <img class="comparison-image" src="/api/outputs/${e.id}/${e.primary_output.split('/').pop()}" alt="Result">
+                            <div class="comparison-stats">
+                                <div class="stat"><span>ID</span><span>${e.id.slice(0, 8)}</span></div>
+                                <div class="stat"><span>Time</span><span>${e.execution_time?.toFixed(2) || '-'}s</span></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

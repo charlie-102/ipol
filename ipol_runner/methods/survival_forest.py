@@ -2,6 +2,7 @@
 
 LTRC (Left-Truncated Right-Censored) Survival Forest for survival analysis.
 """
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -41,6 +42,10 @@ class SurvivalForestMethod(IPOLMethod):
     @property
     def input_type(self) -> InputType:
         return InputType.SENSOR_DATA  # Tabular/CSV data
+
+    @property
+    def input_count(self) -> int:
+        return 0  # Uses built-in datasets by default
 
     @property
     def requirements_file(self):
@@ -223,27 +228,76 @@ class SurvivalForestMethod(IPOLMethod):
                 plt.close()
 
             else:
-                # Fallback: use lifelines KaplanMeierFitter
-                from lifelines import KaplanMeierFitter
+                # Fallback: use lifelines survival fitters
+                survival_fitted = False
 
-                kmf = KaplanMeierFitter()
-                kmf.fit(
-                    data[duration_col],
-                    event_observed=data[event_col],
-                    entry=data[entry_col] if entry_col in data.columns else None
-                )
+                # Try KaplanMeierFitter first
+                try:
+                    from lifelines import KaplanMeierFitter
+                    kmf = KaplanMeierFitter()
+                    kmf.fit(
+                        data[duration_col],
+                        event_observed=data[event_col],
+                        entry=data[entry_col] if entry_col in data.columns else None
+                    )
 
-                # Plot
-                plt.figure(figsize=(10, 6))
-                kmf.plot_survival_function()
-                plt.xlabel('Time')
-                plt.ylabel('Survival Probability')
-                plt.title('Kaplan-Meier Survival Curve')
-                plt.grid(True, alpha=0.3)
-                plt.tight_layout()
-                survival_plot = output_dir / "survival_curves.png"
-                plt.savefig(survival_plot, dpi=150)
-                plt.close()
+                    plt.figure(figsize=(10, 6))
+                    kmf.plot_survival_function()
+                    plt.xlabel('Time')
+                    plt.ylabel('Survival Probability')
+                    plt.title('Kaplan-Meier Survival Curve')
+                    plt.grid(True, alpha=0.3)
+                    plt.tight_layout()
+                    survival_plot = output_dir / "survival_curves.png"
+                    plt.savefig(survival_plot, dpi=150)
+                    plt.close()
+                    survival_fitted = True
+                except Exception as kmf_error:
+                    logging.warning(f"KaplanMeierFitter failed: {kmf_error}")
+
+                # Try BreslowFlemingHarringtonFitter if KMF fails
+                if not survival_fitted:
+                    try:
+                        from lifelines import BreslowFlemingHarringtonFitter
+                        bfh = BreslowFlemingHarringtonFitter()
+                        bfh.fit(
+                            data[duration_col],
+                            event_observed=data[event_col],
+                            entry=data[entry_col] if entry_col in data.columns else None
+                        )
+
+                        plt.figure(figsize=(10, 6))
+                        bfh.plot_survival_function()
+                        plt.xlabel('Time')
+                        plt.ylabel('Survival Probability')
+                        plt.title('Breslow-Fleming-Harrington Survival Curve')
+                        plt.grid(True, alpha=0.3)
+                        plt.tight_layout()
+                        survival_plot = output_dir / "survival_curves.png"
+                        plt.savefig(survival_plot, dpi=150)
+                        plt.close()
+                        survival_fitted = True
+                    except Exception as bfh_error:
+                        logging.warning(f"BreslowFlemingHarringtonFitter failed: {bfh_error}")
+
+                # Last resort: simple survival plot from data
+                if not survival_fitted:
+                    import numpy as np
+                    times = np.sort(data[duration_col].values)
+                    events = data[event_col].values[np.argsort(data[duration_col].values)]
+                    n = len(times)
+                    survival = np.cumprod(1 - events / np.arange(n, 0, -1))
+
+                    plt.figure(figsize=(10, 6))
+                    plt.step(times, survival, where='post')
+                    plt.xlabel('Time')
+                    plt.ylabel('Survival Probability')
+                    plt.title('Survival Curve (Simple Estimate)')
+                    plt.grid(True, alpha=0.3)
+                    plt.tight_layout()
+                    survival_plot = output_dir / "survival_curves.png"
+                    plt.savefig(survival_plot, dpi=150)
+                    plt.close()
 
                 auc_cd = None
 
