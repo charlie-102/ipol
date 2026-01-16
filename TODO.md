@@ -15,9 +15,22 @@
 - [ ] sign_asslisu - Segmentation (Docker)
 
 ### 2024
-- [ ] Browse https://www.ipol.im/pub/art/?y=2024
-- [ ] Select methods to add
-- [ ] Follow guide in `docs/ADDING_METHODS.md`
+- [x] noisesniffer (462) - Forgery detection
+- [x] phinet (549) - InSAR phase denoising (converted to PyTorch)
+- [x] storm (496) - STORM microscopy super-resolution
+- [x] bigcolor (542) - Image colorization (CUDA)
+- [x] icolorit (539) - Interactive colorization (CUDA)
+- [x] nerf_vaxnerf (553) - VaxNeRF accelerated NeRF (CUDA/JAX)
+- [x] tsne (528) - t-SNE dimensionality reduction
+- [x] armcoda (494) - Arm movement analysis
+- [x] dark_channel (530) - Dark channel dehazing (Python + C++ backends)
+- [x] line_segment (481) - Line segment detection (8 algorithms)
+- [x] image_abstraction (495) - Image abstraction (Python + C++ backends)
+- [x] superpixel_color (522) - Color transfer (CUDA)
+- [x] interactive_seg (498) - Interactive segmentation (CUDA)
+- [x] domain_seg (499) - Domain segmentation (CUDA)
+- [x] survival_forest (466) - Survival analysis (built-in datasets)
+- [x] slavc (525) - Audio-visual sound localization (CUDA)
 
 ### 2023
 - [ ] Browse https://www.ipol.im/pub/art/?y=2023

@@ -43,20 +43,56 @@ python -m ipol_runner test
 python -m ipol_runner status
 ```
 
-## Available Methods (2025)
+## Available Methods
 
-| Method | Category | Status | Notes |
-|--------|----------|--------|-------|
-| qmsanet | Denoising | PASS | Deep learning denoising |
-| kervrann | Change Detection | PASS | Requires `ipol_kervrann` conda env |
-| cstrd | Detection | PASS | Requires `ipol_cstrd` conda env |
-| phase_unwrap | Phase Processing | PASS | |
-| nerf_specularity | 3D Reconstruction | PASS | Uses pre-rendered models |
-| semiogram | Medical | PASS | Gait analysis from IMU data |
-| gaussian_splatting | 3D Reconstruction | CUDA | Requires NVIDIA GPU |
-| latent_diffusion | Generation | CUDA | Requires NVIDIA GPU |
-| sign_lmsls | Segmentation | DOCKER | Requires IPOL Docker |
-| sign_asslisu | Segmentation | DOCKER | Requires IPOL Docker |
+### By Category
+
+| Category | Methods | Input Type |
+|----------|---------|------------|
+| **Denoising** | qmsanet, dark_channel | image |
+| **Change Detection** | kervrann | image_pair |
+| **Detection** | cstrd, noisesniffer, line_segment, tsne, slavc | image/dataset_id |
+| **Segmentation** | sign_lmsls, sign_asslisu, interactive_seg, domain_seg | pose_data/image |
+| **Generation** | latent_diffusion, bigcolor, icolorit, image_abstraction, superpixel_color | image/image_pair |
+| **3D Reconstruction** | gaussian_splatting, nerf_specularity, nerf_vaxnerf, storm | image/dataset_id |
+| **Phase Processing** | phase_unwrap, phinet | image/image_pair |
+| **Medical** | semiogram, armcoda, survival_forest | sensor_data |
+
+### IPOL 2025 Methods
+
+| Method | Category | Input | Status | Notes |
+|--------|----------|-------|--------|-------|
+| qmsanet | Denoising | image | PASS | Deep learning denoising |
+| kervrann | Change Detection | image_pair | PASS | Requires `ipol_kervrann` conda env |
+| cstrd | Detection | image | PASS | Requires `ipol_cstrd` conda env |
+| phase_unwrap | Phase Processing | image | PASS | Delaunay triangulation |
+| nerf_specularity | 3D Reconstruction | dataset_id | PASS | Pre-rendered models |
+| semiogram | Medical | sensor_data | PASS | Gait analysis from IMU |
+| gaussian_splatting | 3D Reconstruction | image | CUDA | Requires NVIDIA GPU |
+| latent_diffusion | Generation | image | CUDA | Requires NVIDIA GPU |
+| sign_lmsls | Segmentation | pose_data | DOCKER | Requires IPOL Docker |
+| sign_asslisu | Segmentation | pose_data | DOCKER | Requires IPOL Docker |
+
+### IPOL 2024 Methods
+
+| Method | Category | Input | Status | Notes |
+|--------|----------|-------|--------|-------|
+| dark_channel | Denoising | image | PASS | Python/C++ backends |
+| image_abstraction | Generation | image | PASS | Python/C++ backends |
+| noisesniffer | Detection | image | PASS | Noise-based forgery detection |
+| line_segment | Detection | image | PASS | 8 algorithm comparison |
+| tsne | Detection | dataset_id | PASS | t-SNE visualization |
+| armcoda | Medical | sensor_data | PASS | Motion capture analysis |
+| storm | 3D Reconstruction | image | PASS | Super-resolution microscopy |
+| phinet | Phase Processing | image_pair | SPECIAL | InSAR data (.npy), PyTorch |
+| survival_forest | Medical | sensor_data | SPECIAL | Built-in datasets |
+| bigcolor | Generation | image | CUDA | BigGAN colorization |
+| icolorit | Generation | image | CUDA | Interactive colorization |
+| nerf_vaxnerf | 3D Reconstruction | dataset_id | CUDA | Visual hull NeRF |
+| superpixel_color | Generation | image_pair | CUDA | VGG-based color transfer |
+| interactive_seg | Segmentation | image | CUDA | Click-based segmentation |
+| domain_seg | Segmentation | image | CUDA | Domain generalization |
+| slavc | Detection | image+audio | CUDA | Sound localization |
 
 ## CLI Commands
 
@@ -143,6 +179,16 @@ ipol/
 ├── docs/                     # Documentation
 └── TODO.md                   # Roadmap
 ```
+
+## Backend Conversions
+
+Some methods have been converted to pure Python for easier deployment:
+
+| Method | Original | Converted | Switch |
+|--------|----------|-----------|--------|
+| phinet | TensorFlow/Keras | PyTorch | PyTorch only |
+| dark_channel | C++ | Python | `--param backend=python` (default) or `cpp` |
+| image_abstraction | C++/Qt4 | Python | `--param backend=python` (default) or `cpp` |
 
 ## Roadmap
 
